@@ -79,7 +79,7 @@ const TapeFractionApp = () => {
   );
 
   // 表示用コンポーネント：テープ
-  const Tape = ({ length, color, borderColor, label, showSegments, multiplier, isBase }) => {
+  const Tape = ({ length, color, borderColor, label, showSegments, multiplier, isBase, showHint }) => {
     // 画面幅に収まるように調整
     const maxPossibleLength = 60 * 4;
     const widthPercentage = Math.min((length / maxPossibleLength) * 90, 100);
@@ -89,7 +89,7 @@ const TapeFractionApp = () => {
         <div className="flex items-center mb-1">
           <span className="font-bold text-gray-700 mr-2 w-12 text-right">{label}</span>
           {/* テープのラベル横にも「もと」を表示してあげる */}
-          {isBase && <BaseBadge />}
+          {isBase && showHint && <BaseBadge />}
         </div>
         <div className="relative w-full">
           <div
@@ -183,6 +183,7 @@ const TapeFractionApp = () => {
             showSegments={true}
             multiplier={multiplier}
             isBase={isBlueBase}
+            showHint={showHint}
           />
 
           {/* スペーサー */}
@@ -197,6 +198,7 @@ const TapeFractionApp = () => {
             showSegments={false}
             multiplier={1}
             isBase={isRedBase}
+            showHint={showHint}
           />
 
         </div>
@@ -206,13 +208,13 @@ const TapeFractionApp = () => {
           {type === 'times' ? (
             <>
               <span className="text-blue-600">あみさん</span>の テープの 長さは、<br />
-              <span className="text-red-500">りくさん</span>の テープの 長さ<BaseBadge />の<br />
+              <span className="text-red-500">りくさん</span>の テープの 長さ{showHint && <BaseBadge />}の<br />
               <span className="inline-block border-b-4 border-gray-800 px-2 min-w-[3ch] text-center mt-2">？</span> です。
             </>
           ) : (
             <>
               <span className="text-red-500">りくさん</span>の テープの 長さは、<br />
-              <span className="text-blue-600">あみさん</span>の テープの 長さ<BaseBadge />の<br />
+              <span className="text-blue-600">あみさん</span>の テープの 長さ{showHint && <BaseBadge />}の<br />
               <span className="inline-block border-b-4 border-gray-800 px-2 min-w-[3ch] text-center mt-2">？</span> です。
             </>
           )}
