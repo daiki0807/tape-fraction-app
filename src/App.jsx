@@ -7,46 +7,61 @@ const TapeFractionApp = () => {
   const [questionCount, setQuestionCount] = useState(0);
   const [currentProblem, setCurrentProblem] = useState(null);
   const [feedback, setFeedback] = useState(null); // 'correct', 'incorrect'
+  const [questionQueue, setQuestionQueue] = useState([]);
   const [showHint, setShowHint] = useState(false);
 
   const TOTAL_QUESTIONS = 5;
 
-  // 問題生成ロジック
-  const generateProblem = () => {
-    // 2倍, 3倍, 4倍 のいずれか
-    const multiplier = Math.floor(Math.random() * 3) + 2;
-
-    // 問題タイプ: 'times' (倍数) or 'fraction' (分数)
-    const type = Math.random() > 0.5 ? 'times' : 'fraction';
-
-    // テープの基本サイズ (ロジック計算用)
+  // 問題生成ロジック（全パターンからランダムに重複なしで抽出）
+  const generateQuestionQueue = () => {
+    const questions = [];
     const baseUnit = 60;
 
-    return {
-      multiplier,
-      type,
-      shortTapeLength: baseUnit,
-      longTapeLength: baseUnit * multiplier,
-      tapeA: { color: 'bg-blue-200', borderColor: 'border-blue-400', label: 'あみ' },
-      tapeB: { color: 'bg-red-200', borderColor: 'border-red-400', label: 'りく' }
-    };
+    // 2～5の範囲で「倍」と「分数」の全組み合わせを作成 (4 x 2 = 8パターン)
+    [2, 3, 4, 5].forEach(multiplier => {
+      ['times', 'fraction'].forEach(type => {
+        questions.push({
+          multiplier,
+          type,
+          shortTapeLength: baseUnit,
+          longTapeLength: baseUnit * multiplier,
+          tapeA: { color: 'bg-blue-200', borderColor: 'border-blue-400', label: 'あみ' },
+          tapeB: { color: 'bg-red-200', borderColor: 'border-red-400', label: 'りく' }
+        });
+      });
+    });
+
+    // シャッフル (Fisher-Yates algorithm)
+    for (let i = questions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [questions[i], questions[j]] = [questions[j], questions[i]];
+    }
+
+    // 必要な数だけ返す
+    return questions.slice(0, TOTAL_QUESTIONS);
   };
 
   const startGame = () => {
+    const newQueue = generateQuestionQueue();
+    setQuestionQueue(newQueue);
+    setCurrentProblem(newQueue[0]);
     setScore(0);
-    setQuestionCount(0);
+    setQuestionCount(0); // 0-based for array index access, display will be +1
     setGameState('playing');
-    nextQuestion();
+    setFeedback(null);
+    setShowHint(false);
   };
 
   const nextQuestion = () => {
     setFeedback(null);
     setShowHint(false);
-    if (questionCount >= TOTAL_QUESTIONS) {
+
+    const nextCount = questionCount + 1;
+    if (nextCount >= TOTAL_QUESTIONS) {
       setGameState('result');
     } else {
-      setCurrentProblem(generateProblem());
-      setQuestionCount(prev => prev + 1);
+      setQuestionCount(nextCount);
+      setCurrentProblem(questionQueue[nextCount]);
     }
   };
 
@@ -63,7 +78,7 @@ const TapeFractionApp = () => {
     }
 
     setTimeout(() => {
-      if (questionCount < TOTAL_QUESTIONS) {
+      if (questionCount + 1 < TOTAL_QUESTIONS) {
         nextQuestion();
       } else {
         setGameState('result');
@@ -141,7 +156,7 @@ const TapeFractionApp = () => {
 
         {/* 進捗バー */}
         <div className="w-full flex justify-between items-center mb-6 text-gray-500 font-bold">
-          <div>もんだい {questionCount} / {TOTAL_QUESTIONS}</div>
+          <div>もんだい {questionCount + 1} / {TOTAL_QUESTIONS}</div>
           <div className="flex items-center text-yellow-500">
             <Star className="w-5 h-5 mr-1 fill-current" />
             <span>{score}</span>
@@ -221,9 +236,9 @@ const TapeFractionApp = () => {
         </div>
 
         {/* 解答ボタンエリア */}
-        <div className="grid grid-cols-3 gap-4 w-full max-w-md">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-lg">
           {type === 'times' ? (
-            [2, 3, 4].map(num => (
+            [2, 3, 4, 5].map(num => (
               <button
                 key={num}
                 onClick={() => checkAnswer(num)}
@@ -235,7 +250,7 @@ const TapeFractionApp = () => {
               </button>
             ))
           ) : (
-            [2, 3, 4].map(num => (
+            [2, 3, 4, 5].map(num => (
               <button
                 key={num}
                 onClick={() => checkAnswer(`1/${num}`)}
