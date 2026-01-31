@@ -265,8 +265,6 @@ const TapeFractionApp = () => {
         {showHint && (
           <div className="mt-4 p-4 bg-yellow-50 rounded-lg text-gray-600 text-sm animate-fadeIn text-center">
             💡
-            <span className="bg-gray-700 text-white text-xs px-2 py-0.5 rounded-full mx-1">もと</span>
-            がついている方のテープを「1」と考えよう。<br />
             {type === 'times'
               ? `「もと」のテープの、なんこぶん かな？`
               : `「もと」のテープを、なんこに わけたかな？`}
